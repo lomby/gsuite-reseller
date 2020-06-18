@@ -2,24 +2,39 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"google.golang.org/api/reseller/v1"
 )
 
 type seats struct {
-	LicensedNumberOfSeats int `json: "licensedNumberOfSeats"`
+	LicensedNumberOfSeats int `json: "licensedNumberOfSeats,omitempty"`
+	MaximumNumberOfSeats  int `json: "maximumNumberOfSeats"`
+	NumberOfSeats         int `json: "numberOfSeats"`
+}
+
+type plan struct {
+	IsCommitmentPlan bool   `json: "isCommitmentPlan"`
+	PlanName         string `json: "planName"`
+}
+
+type renewalSettings struct {
+	RenewalType string `json: "renewalType"`
 }
 
 type subscription struct {
-	BillingMethod     string   `json: "billingMethod"`
-	CreationTime      string   `json: "creationTime"`
-	CustomerDomain    string   `json: "customerDomain"`
-	CustomerID        string   `json: "customerId"`
-	SubscriptionID    string   `json: "subscriptionId"`
-	Status            string   `json: "status"`
-	SuspensionReasons []string `json:"suspensionReasons"`
-	Seats             seats    `json: "seats"`
+	BillingMethod     string          `json: "billingMethod,omitempty"`
+	CreationTime      string          `json: "creationTime,omitempty"`
+	CustomerDomain    string          `json: "customerDomain"`
+	CustomerID        string          `json: "customerId"`
+	SubscriptionID    string          `json: "subscriptionId,omitempty"`
+	Status            string          `json: "status,omitEmpty"`
+	SuspensionReasons []string        `json:"suspensionReasons,omitempty"`
+	Seats             seats           `json: "seats"`
+	SKUID             string          `json: "skuId"`
+	Plan              plan            `json: "plan"`
+	RenewalSettings   renewalSettings `json: "renewalSettings"`
 }
 
 // Shouldn't really need this?
@@ -65,6 +80,29 @@ func findSubscriptionByCustomerID(conn *reseller.Service, customerID string) sub
 
 	return subscription
 
+}
+
+func createSubscription(conn *reseller.Service, customerID string, subscription subscription) (*reseller.Subscription, error) {
+
+	js, err := json.Marshal(subscription)
+
+	if err != nil {
+
+	}
+
+	var newSubscription reseller.Subscription
+
+	json.Unmarshal(js, &newSubscription)
+
+	fmt.Println(newSubscription)
+
+	result, err := conn.Subscriptions.Insert(customerID, &newSubscription).Do()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func suspendSubscription(conn *reseller.Service, customerID string) subscription {

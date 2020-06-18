@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 
@@ -14,12 +15,12 @@ func main() {
 ctx := context.Background()
 
 filename := "creds/credentials.json"
-json, err := ioutil.ReadFile(filename)
+js, err := ioutil.ReadFile(filename)
 
 if err != nil {
 	log.Println(err)
 }
-credentials, err := google.JWTConfigFromJSON(json,
+credentials, err := google.JWTConfigFromJSON(js,
 	reseller.AppsOrderScope,
 )
 
@@ -36,8 +37,22 @@ if err != nil {
 	log.Println(err)
 }
 
-result := getCustomer(resellerService, "1stchoice-glassky.com")
+// result := getCustomer(resellerService, "1stchoice-glassky.com")
 
-fmt.Println(result)
+file, _ := ioutil.ReadFile("subscription.json")
+
+var subscription subscription
+
+json.Unmarshal(file, &subscription)
+
+fmt.Println(subscription)
+
+newSubscription, err := createSubscription(resellerService, "C01rsqodj", subscription)
+
+if err != nil {
+	fmt.Println(err)
+}
+
+fmt.Println(newSubscription)
 
 }

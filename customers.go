@@ -44,3 +44,25 @@ func getCustomer(conn *reseller.Service, customerID string) customer {
 	return customer
 
 }
+
+func createCustomer(conn *reseller.Service, customer customer) (*reseller.Customer, error) {
+
+	js, err := json.Marshal(customer)
+
+	var newCustomer reseller.Customer
+
+	json.Unmarshal(js, &newCustomer)
+
+	if err != nil {
+
+	}
+
+	result, err := conn.Customers.Insert(&newCustomer).Do()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+
+}
