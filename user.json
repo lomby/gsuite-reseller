@@ -1,9 +1,0 @@
-{
-  "name": {
-    "familyName": "Sherwood",
-    "givenName": "Neil"
-  },
-  "password": "randomstring",
-  "primaryEmail": "neil@zest.fm",
-  "changePasswordAtnextLogin": true
-}
