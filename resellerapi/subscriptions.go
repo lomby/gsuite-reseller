@@ -1,4 +1,4 @@
-package main
+package resellerapi
 
 import (
 	"encoding/json"
@@ -39,7 +39,7 @@ type subscription struct {
 }
 
 // Shouldn't really need this?
-func listSubscriptions(conn *reseller.Service, maxResults int64) []subscription {
+func ListSubscriptions(conn *reseller.Service, maxResults int64) []subscription {
 
 	result, err := conn.Subscriptions.List().MaxResults(maxResults).Do()
 
@@ -60,7 +60,7 @@ func listSubscriptions(conn *reseller.Service, maxResults int64) []subscription 
 
 }
 
-func findSubscriptionByCustomerID(conn *reseller.Service, customerID string) subscription {
+func FindSubscriptionByCustomerID(conn *reseller.Service, customerID string) subscription {
 
 	result, err := conn.Subscriptions.List().CustomerId(customerID).Do()
 
@@ -81,7 +81,7 @@ func findSubscriptionByCustomerID(conn *reseller.Service, customerID string) sub
 
 }
 
-func createSubscription(conn *reseller.Service, customerID string, data []byte) (*reseller.Subscription, error) {
+func CreateSubscription(conn *reseller.Service, customerID string, data []byte) (*reseller.Subscription, error) {
 
 	var subscription reseller.Subscription
 	json.Unmarshal(data, &subscription)
@@ -95,9 +95,9 @@ func createSubscription(conn *reseller.Service, customerID string, data []byte) 
 	return result, nil
 }
 
-func suspendSubscription(conn *reseller.Service, customerID string) subscription {
+func SuspendSubscription(conn *reseller.Service, customerID string) subscription {
 
-	subscriptionID := findSubscriptionByCustomerID(conn, customerID).SubscriptionID
+	subscriptionID := FindSubscriptionByCustomerID(conn, customerID).SubscriptionID
 
 	result, err := conn.Subscriptions.Suspend(customerID, subscriptionID).Do()
 
@@ -117,9 +117,9 @@ func suspendSubscription(conn *reseller.Service, customerID string) subscription
 	return subscription
 }
 
-func activateSubscription(conn *reseller.Service, customerID string) subscription {
+func ActivateSubscription(conn *reseller.Service, customerID string) subscription {
 
-	subscriptionID := findSubscriptionByCustomerID(conn, customerID).SubscriptionID
+	subscriptionID := FindSubscriptionByCustomerID(conn, customerID).SubscriptionID
 
 	result, err := conn.Subscriptions.Activate(customerID, subscriptionID).Do()
 

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 
+	adminapi "github.com/lomby/gsuite/adminapi/users"
 	"golang.org/x/oauth2/google"
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/reseller/v1"
@@ -52,14 +53,16 @@ func newAdminService() *admin.Service {
 		log.Println(err)
 	}
 	credentials, err := google.JWTConfigFromJSON(js,
-		admin.CloudPlatformScope,
+		admin.AdminDirectoryUserScope,
+		admin.AdminDirectoryGroupScope,
 	)
 
 	if err != nil {
 		log.Println(err)
 	}
 
-	// credentials.Subject = "soletrader@reseller.soletrader.com"
+	// user to impersonate
+	credentials.Subject = "soletrader@reseller.soletrader.com"
 	client := credentials.Client(ctx)
 
 	adminService, err := admin.New(client)
@@ -78,6 +81,9 @@ func main() {
 
 	// result := getCustomer(resellerService, "CUSTOMER_ID_HERE")
 
-	fmt.Println(adminService)
+	data, _ := ioutil.ReadFile("user.json")
+	newUser := adminapi.CreateUser(adminService, data)
+
+	fmt.Println(newUser)
 
 }
