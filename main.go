@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
-	adminapi "github.com/lomby/gsuite/adminapi/users"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2/google"
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/reseller/v1"
@@ -44,6 +45,7 @@ func newResellerService() *reseller.Service {
 
 // Establish a connetion to the Gogle Admin API
 func newAdminService() *admin.Service {
+
 	ctx := context.Background()
 
 	filename := "creds/credentials.json"
@@ -76,14 +78,26 @@ func newAdminService() *admin.Service {
 
 func main() {
 
+	app := &cli.App{
+		Name:  "boom",
+		Usage: "make an explosive entrance",
+		Action: func(c *cli.Context) error {
+			fmt.Println("boom! I say!")
+			return nil
+		},
+	}
+
 	// resellerService := newResellerService()
-	adminService := newAdminService()
+	// adminService := newAdminService()
 
 	// result := getCustomer(resellerService, "CUSTOMER_ID_HERE")
 
-	data, _ := ioutil.ReadFile("user.json")
-	newUser := adminapi.CreateUser(adminService, data)
+	// data, _ := ioutil.ReadFile("user.json")
+	// newUser := adminapi.CreateUser(adminService, data)
 
-	fmt.Println(newUser)
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
