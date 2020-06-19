@@ -1,4 +1,4 @@
-package main
+package resellerapi
 
 import (
 	"encoding/json"
@@ -23,7 +23,7 @@ type customer struct {
 	PostalAddress          address `json: "postalAddress"`
 }
 
-func getCustomer(conn *reseller.Service, customerID string) customer {
+func GetCustomer(conn *reseller.Service, customerID string) customer {
 
 	result, err := conn.Customers.Get(customerID).Do()
 
@@ -44,7 +44,7 @@ func getCustomer(conn *reseller.Service, customerID string) customer {
 
 }
 
-func createCustomer(conn *reseller.Service, data []byte) (*reseller.Customer, error) {
+func CreateCustomer(conn *reseller.Service, data []byte) (*reseller.Customer, error) {
 
 	var newCustomer reseller.Customer
 	json.Unmarshal(data, &newCustomer)
