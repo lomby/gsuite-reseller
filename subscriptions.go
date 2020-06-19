@@ -8,18 +8,34 @@ import (
 )
 
 type seats struct {
-	LicensedNumberOfSeats int `json: "licensedNumberOfSeats"`
+	Kind                  string `json: "kind"`
+	LicensedNumberOfSeats int    `json: "licensedNumberOfSeats,omitempty"`
+	MaximumNumberOfSeats  int    `json: "maximumNumberOfSeats"`
+	NumberOfSeats         int    `json: "numberOfSeats,omitempty"`
+}
+
+type plan struct {
+	IsCommitmentPlan bool   `json: "isCommitmentPlan,omitempty"`
+	PlanName         string `json: "planName"`
+}
+
+type renewalSettings struct {
+	RenewalType string `json: "renewalType,omitempty"`
 }
 
 type subscription struct {
-	BillingMethod     string   `json: "billingMethod"`
-	CreationTime      string   `json: "creationTime"`
-	CustomerDomain    string   `json: "customerDomain"`
-	CustomerID        string   `json: "customerId"`
-	SubscriptionID    string   `json: "subscriptionId"`
-	Status            string   `json: "status"`
-	SuspensionReasons []string `json:"suspensionReasons"`
-	Seats             seats    `json: "seats"`
+	Kind              string          `json:"kind"`
+	BillingMethod     string          `json: "billingMethod,omitempty"`
+	CreationTime      string          `json: "creationTime,omitempty"`
+	CustomerDomain    string          `json: "customerDomain"`
+	CustomerID        string          `json: "customerId"`
+	SubscriptionID    string          `json: "subscriptionId,omitempty"`
+	Status            string          `json: "status,omitEmpty"`
+	SuspensionReasons []string        `json:"suspensionReasons,omitempty"`
+	PurchaseOrderID   string          `json:"purchaseOrderId"`
+	Seats             seats           `json: "seats"`
+	Plan              plan            `json: "plan"`
+	RenewalSettings   renewalSettings `json: "renewalSettings,omitempty"`
 }
 
 // Shouldn't really need this?
@@ -38,7 +54,6 @@ func listSubscriptions(conn *reseller.Service, maxResults int64) []subscription 
 	}
 
 	var subscriptions []subscription
-
 	json.Unmarshal(js, &subscriptions)
 
 	return subscriptions
@@ -60,11 +75,24 @@ func findSubscriptionByCustomerID(conn *reseller.Service, customerID string) sub
 	}
 
 	var subscription subscription
-
 	json.Unmarshal(js, &subscription)
 
 	return subscription
 
+}
+
+func createSubscription(conn *reseller.Service, customerID string, data []byte) (*reseller.Subscription, error) {
+
+	var subscription reseller.Subscription
+	json.Unmarshal(data, &subscription)
+
+	result, err := conn.Subscriptions.Insert(customerID, &subscription).Do()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func suspendSubscription(conn *reseller.Service, customerID string) subscription {
@@ -84,7 +112,6 @@ func suspendSubscription(conn *reseller.Service, customerID string) subscription
 	}
 
 	var subscription subscription
-
 	json.Unmarshal(js, &subscription)
 
 	return subscription
@@ -107,7 +134,6 @@ func activateSubscription(conn *reseller.Service, customerID string) subscriptio
 	}
 
 	var subscription subscription
-
 	json.Unmarshal(js, &subscription)
 
 	return subscription
