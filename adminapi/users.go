@@ -2,6 +2,7 @@ package adminapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	admin "google.golang.org/api/admin/directory/v1"
@@ -19,7 +20,7 @@ type user struct {
 	ChangePasswordAtNextLogin bool   `json: "changePasswordAtNextLogin"`
 }
 
-func CreateUser(conn *admin.Service, data []byte) *admin.User {
+func CreateUser(conn *admin.Service, data []byte) (*admin.User, error) {
 
 	var newUser admin.User
 	json.Unmarshal(data, &newUser)
@@ -27,25 +28,27 @@ func CreateUser(conn *admin.Service, data []byte) *admin.User {
 	result, err := conn.Users.Insert(&newUser).Do()
 
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
-	return result
+	return result, nil
 
 }
 
-func UpdateUser(conn *admin.Service, data []byte) *admin.User {
+func UpdateUser(conn *admin.Service, userKey string, data []byte) (*admin.User, error) {
+
+	fmt.Println(string(data))
 
 	var user admin.User
 	json.Unmarshal(data, &user)
 
-	result, err := conn.Users.Update(&user)
+	result, err := conn.Users.Update(userKey, &user).Do()
 
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
-	return result
+	return result, nil
 
 }
 

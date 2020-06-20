@@ -1,99 +1,168 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
+	"github.com/lomby/gsuite/adminapi"
+	"github.com/lomby/gsuite/resellerapi"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/oauth2/google"
-	admin "google.golang.org/api/admin/directory/v1"
-	"google.golang.org/api/reseller/v1"
 )
 
-// Establish a connection to the Google Reseller API
-func newResellerService() *reseller.Service {
-	ctx := context.Background()
+var app = cli.NewApp()
 
-	filename := "creds/credentials.json"
-	js, err := ioutil.ReadFile(filename)
-
-	if err != nil {
-		log.Println(err)
-	}
-	credentials, err := google.JWTConfigFromJSON(js,
-		reseller.AppsOrderScope,
-	)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	credentials.Subject = "soletrader@reseller.soletrader.com"
-	client := credentials.Client(ctx)
-
-	resellerService, err := reseller.New(client)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	return resellerService
-}
-
-// Establish a connetion to the Gogle Admin API
-func newAdminService() *admin.Service {
-
-	ctx := context.Background()
-
-	filename := "creds/credentials.json"
-	js, err := ioutil.ReadFile(filename)
-
-	if err != nil {
-		log.Println(err)
-	}
-	credentials, err := google.JWTConfigFromJSON(js,
-		admin.AdminDirectoryUserScope,
-		admin.AdminDirectoryGroupScope,
-	)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	// user to impersonate
-	credentials.Subject = "soletrader@reseller.soletrader.com"
-	client := credentials.Client(ctx)
-
-	adminService, err := admin.New(client)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	return adminService
+func appInfo() {
+	app.Name = "Google Reseller cli"
+	app.Usage = "Manage subscriptions, customers and admin for Google Resellers"
+	app.Version = "1.0.0"
 }
 
 func main() {
 
-	app := &cli.App{
-		Name:  "boom",
-		Usage: "make an explosive entrance",
-		Action: func(c *cli.Context) error {
-			fmt.Println("boom! I say!")
-			return nil
+	appInfo()
+
+	var customerID string
+	var customerData string
+	var userData string
+	var userKey string
+
+	customerIDFlag := []cli.Flag{
+		&cli.StringFlag{
+			Name:        "id",
+			Usage:       "Sets the customer id (can be customerDomain or customerId)",
+			Destination: &customerID,
+			Required:    true,
 		},
 	}
 
-	// resellerService := newResellerService()
-	// adminService := newAdminService()
+	customerObjectFlag := []cli.Flag{
+		&cli.StringFlag{
+			Name:        "customer",
+			Usage:       "customer object in ESCAPED json data (refer to Google Reseller api docs for required data)",
+			Destination: &customerData,
+			Required:    true,
+		},
+	}
 
-	// result := getCustomer(resellerService, "CUSTOMER_ID_HERE")
+	userObjectFlag := &cli.StringFlag{
+		Name:        "user",
+		Usage:       "user object in ESCAPED json data (refer to Google Admin SDK api docs for required data)",
+		Destination: &userData,
+		Required:    true,
+	}
 
-	// data, _ := ioutil.ReadFile("user.json")
-	// newUser := adminapi.CreateUser(adminService, data)
+	userKeyFlag := &cli.StringFlag{
+		Name:        "userKey",
+		Usage:       "user key (userId or primary email address)",
+		Destination: &userKey,
+		Required:    true,
+	}
+
+	app.Commands = []*cli.Command{
+		// Commands for Customers in Google Reseller API
+		&cli.Command{
+			Name:        "customer",
+			Usage:       "Customer commands for Google reseller api",
+			Description: "Manage google customer details",
+			Subcommands: []*cli.Command{
+				{
+					Name:        "get",
+					Usage:       "customer get --id C0*****",
+					Description: "get customer details using customerId",
+					Category:    "customer",
+					Flags:       customerIDFlag,
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						customer := resellerapi.GetCustomer(resellerService, customerID)
+						fmt.Println(customer)
+						return nil
+					},
+				},
+				{
+					Name:        "create",
+					Usage:       "customer create --customer {jsonData}",
+					Description: "create a customer using ESCAPED json data",
+					Category:    "customer",
+					Flags:       customerObjectFlag,
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						customer, err := resellerapi.CreateCustomer(resellerService, []byte(customerData))
+
+						if err != nil {
+							return err
+						}
+
+						fmt.Println(customer)
+						return nil
+					},
+				},
+			},
+		},
+		// Commands for Subscritions in Google Reseller
+		{
+			Name:        "subscription",
+			Usage:       "Subscription commands for Google reseller api",
+			Description: "Manage google subscription details",
+			Subcommands: []*cli.Command{
+				{
+					Name:        "get",
+					Usage:       "subscription get --id CUSTOMERID",
+					Description: "get subscription details using customerId",
+					Category:    "subscription",
+					Flags:       customerIDFlag,
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						subscription := resellerapi.FindSubscriptionByCustomerID(resellerService, customerID)
+						fmt.Println(subscription)
+						return nil
+					},
+				},
+			},
+		},
+		// Commands for Subscritions in Google Reseller
+		{
+			Name:        "user",
+			Usage:       "User commands for Google Admin SDK",
+			Description: "Manage google users details",
+			Subcommands: []*cli.Command{
+				// Update a user
+				{
+					Name:        "update",
+					Usage:       "user update --userKey USERKEY --user {jsonData}",
+					Description: "update user details using the userKey and a user object",
+					Category:    "user",
+					Flags:       []cli.Flag{userKeyFlag, userObjectFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						user, err := adminapi.UpdateUser(adminService, userKey, []byte(userData))
+						if err != nil {
+							return err
+						}
+						fmt.Println(user)
+						return nil
+					},
+				},
+				// Create a user
+				{
+					Name:        "create",
+					Usage:       "user create --user {jsonData}",
+					Description: "create a user a user object",
+					Category:    "user",
+					Flags:       []cli.Flag{userObjectFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						user, err := adminapi.CreateUser(adminService, []byte(userData))
+						if err != nil {
+							return err
+						}
+						fmt.Println(user)
+						return nil
+					},
+				},
+			},
+		},
+	}
 
 	err := app.Run(os.Args)
 	if err != nil {
