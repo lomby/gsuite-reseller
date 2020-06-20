@@ -3,7 +3,6 @@ package adminapi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	admin "google.golang.org/api/admin/directory/v1"
 )
@@ -52,14 +51,14 @@ func UpdateUser(conn *admin.Service, userKey string, data []byte) (*admin.User, 
 
 }
 
-func GetUser(conn *admin.Service, userKey string) *admin.User {
+func GetUser(conn *admin.Service, userKey string) (*admin.User, error) {
 
 	result, err := conn.Users.Get(userKey).Do()
 
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
-	return result
+	return result, nil
 
 }

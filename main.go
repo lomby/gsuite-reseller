@@ -24,25 +24,31 @@ func main() {
 
 	var customerID string
 	var customerData string
+	var subscriptionData string
 	var userData string
 	var userKey string
 
-	customerIDFlag := []cli.Flag{
-		&cli.StringFlag{
-			Name:        "id",
-			Usage:       "Sets the customer id (can be customerDomain or customerId)",
-			Destination: &customerID,
-			Required:    true,
-		},
+	// Flags for use within all commands and subcommands
+
+	customerIDFlag := &cli.StringFlag{
+		Name:        "id",
+		Usage:       "Sets the customer id (can be customerDomain or customerId)",
+		Destination: &customerID,
+		Required:    true,
 	}
 
-	customerObjectFlag := []cli.Flag{
-		&cli.StringFlag{
-			Name:        "customer",
-			Usage:       "customer object in ESCAPED json data (refer to Google Reseller api docs for required data)",
-			Destination: &customerData,
-			Required:    true,
-		},
+	customerObjectFlag := &cli.StringFlag{
+		Name:        "customer",
+		Usage:       "customer object in ESCAPED json data (refer to Google Reseller api docs for required data)",
+		Destination: &customerData,
+		Required:    true,
+	}
+
+	subscriptionObjectFlag := &cli.StringFlag{
+		Name:        "subscription",
+		Usage:       "subscription object in ESCAPED json data (refer to Google Reseller api docs for required data)",
+		Destination: &subscriptionData,
+		Required:    true,
 	}
 
 	userObjectFlag := &cli.StringFlag{
@@ -59,6 +65,8 @@ func main() {
 		Required:    true,
 	}
 
+	// Commands and Subcommands
+
 	app.Commands = []*cli.Command{
 		// Commands for Customers in Google Reseller API
 		&cli.Command{
@@ -71,7 +79,7 @@ func main() {
 					Usage:       "customer get --id C0*****",
 					Description: "get customer details using customerId",
 					Category:    "customer",
-					Flags:       customerIDFlag,
+					Flags:       []cli.Flag{customerIDFlag},
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
 						customer := resellerapi.GetCustomer(resellerService, customerID)
@@ -84,7 +92,7 @@ func main() {
 					Usage:       "customer create --customer {jsonData}",
 					Description: "create a customer using ESCAPED json data",
 					Category:    "customer",
-					Flags:       customerObjectFlag,
+					Flags:       []cli.Flag{customerObjectFlag},
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
 						customer, err := resellerapi.CreateCustomer(resellerService, []byte(customerData))
@@ -99,18 +107,37 @@ func main() {
 				},
 			},
 		},
+
 		// Commands for Subscritions in Google Reseller
 		{
 			Name:        "subscription",
 			Usage:       "Subscription commands for Google reseller api",
 			Description: "Manage google subscription details",
 			Subcommands: []*cli.Command{
+				// Create a subscription using a subscription object
+				{
+					Name:        "create",
+					Usage:       "subscription create --id CUSTOMERID --subscription {jsonData}",
+					Description: "create a subscription using a customerId and a subscrption Object",
+					Category:    "subscription",
+					Flags:       []cli.Flag{customerIDFlag, subscriptionObjectFlag},
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						subscription, err := resellerapi.CreateSubscription(resellerService, customerID, []byte(subscriptionData))
+						if err != nil {
+							return err
+						}
+						fmt.Println(subscription)
+						return nil
+					},
+				},
+				// Get a subscription using a customerId
 				{
 					Name:        "get",
 					Usage:       "subscription get --id CUSTOMERID",
 					Description: "get subscription details using customerId",
 					Category:    "subscription",
-					Flags:       customerIDFlag,
+					Flags:       []cli.Flag{customerIDFlag},
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
 						subscription := resellerapi.FindSubscriptionByCustomerID(resellerService, customerID)
@@ -118,14 +145,60 @@ func main() {
 						return nil
 					},
 				},
+				// Suspend a subscription using customerId
+				{
+					Name:        "suspend",
+					Usage:       "subscription suspend --id CUSTOMERID",
+					Description: "suspend a subscription using customerId",
+					Category:    "subscription",
+					Flags:       []cli.Flag{customerIDFlag},
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						subscription := resellerapi.SuspendSubscription(resellerService, customerID)
+						fmt.Println(subscription)
+						return nil
+					},
+				},
+				// Activate a subscription using customerId
+				{
+					Name:        "activate",
+					Usage:       "subscription activate --id CUSTOMERID",
+					Description: "activate a subscription using customerId",
+					Category:    "subscription",
+					Flags:       []cli.Flag{customerIDFlag},
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						subscription := resellerapi.ActivateSubscription(resellerService, customerID)
+						fmt.Println(subscription)
+						return nil
+					},
+				},
 			},
 		},
+
 		// Commands for Subscritions in Google Reseller
 		{
 			Name:        "user",
 			Usage:       "User commands for Google Admin SDK",
 			Description: "Manage google users details",
 			Subcommands: []*cli.Command{
+				// Get a user
+				{
+					Name:        "get",
+					Usage:       "user get --userKey USERKEY",
+					Description: "get a user using a userKey",
+					Category:    "user",
+					Flags:       []cli.Flag{userKeyFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						user, err := adminapi.GetUser(adminService, userKey)
+						if err != nil {
+							return err
+						}
+						fmt.Println(user)
+						return nil
+					},
+				},
 				// Update a user
 				{
 					Name:        "update",
