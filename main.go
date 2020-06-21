@@ -27,6 +27,7 @@ func main() {
 	var subscriptionData string
 	var userData string
 	var userKey string
+	var userAlias string
 
 	// Flags for use within all commands and subcommands
 
@@ -62,6 +63,13 @@ func main() {
 		Name:        "userKey",
 		Usage:       "user key (userId or primary email address)",
 		Destination: &userKey,
+		Required:    true,
+	}
+
+	userAliasFlag := &cli.StringFlag{
+		Name:        "userAlias",
+		Usage:       "alias to add to a user",
+		Destination: &userAlias,
 		Required:    true,
 	}
 
@@ -230,6 +238,74 @@ func main() {
 							return err
 						}
 						fmt.Println(user)
+						return nil
+					},
+				},
+				// Make user super admin
+				{
+					Name:        "make-admin",
+					Usage:       "user make-admin --userKey USERKEY",
+					Description: "make user a super admin",
+					Category:    "user",
+					Flags:       []cli.Flag{userKeyFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						status, err := adminapi.MakeUserAdmin(adminService, userKey)
+						if err != nil {
+							return err
+						}
+						fmt.Println(status)
+						return nil
+					},
+				},
+				// Make user super admin
+				{
+					Name:        "delete",
+					Usage:       "user delete --userKey USERKEY",
+					Description: "delete a user",
+					Category:    "user",
+					Flags:       []cli.Flag{userKeyFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						status, err := adminapi.DeleteUser(adminService, userKey)
+						if err != nil {
+							return err
+						}
+						fmt.Println(status)
+						return nil
+					},
+				},
+				// Create an alias for a user
+				{
+					Name:        "add-alias",
+					Usage:       "user add-alias --userKey USERKEY --userAlias ALIAS (e.g. alias@primary-domain.com)",
+					Description: "add a user alias",
+					Category:    "user",
+					Flags:       []cli.Flag{userKeyFlag, userAliasFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						result, err := adminapi.CreateUserAlias(adminService, userKey, userAlias)
+						if err != nil {
+							return err
+						}
+						fmt.Println(result)
+						return nil
+					},
+				},
+				// Delete an alias for a user
+				{
+					Name:        "delete-alias",
+					Usage:       "user delete-alias --userKey USERKEY --userAlias ALIAS (e.g. alias@primary-domain.com)",
+					Description: "add a user alias",
+					Category:    "user",
+					Flags:       []cli.Flag{userKeyFlag, userAliasFlag},
+					Action: func(c *cli.Context) error {
+						adminService := adminapi.New()
+						result, err := adminapi.DeleteUserAlias(adminService, userKey, userAlias)
+						if err != nil {
+							return err
+						}
+						fmt.Println(result)
 						return nil
 					},
 				},
