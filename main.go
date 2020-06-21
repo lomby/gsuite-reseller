@@ -197,6 +197,23 @@ func main() {
 						return nil
 					},
 				},
+				// Delete a Subscription
+				{
+					Name:        "delete",
+					Usage:       "subscription delete --id CUSTOMERID",
+					Description: "delete a subscription using customerId (ends the reseller relationship and transfers it directly to Google)",
+					Category:    "subscription",
+					Flags:       []cli.Flag{customerIDFlag},
+					Action: func(c *cli.Context) error {
+						resellerService := resellerapi.New()
+						subscription, err := resellerapi.DeleteSubscription(resellerService, customerID)
+						if err != nil {
+							fmt.Println(err)
+						}
+						fmt.Println(subscription)
+						return nil
+					},
+				},
 			},
 		},
 

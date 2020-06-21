@@ -138,3 +138,17 @@ func ActivateSubscription(conn *reseller.Service, customerID string) subscriptio
 
 	return subscription
 }
+
+func DeleteSubscription(conn *reseller.Service, customerID string) (string, error) {
+
+	subscriptionID := FindSubscriptionByCustomerID(conn, customerID).SubscriptionID
+
+	err := conn.Subscriptions.Delete(customerID, subscriptionID, "transfer_to_direct").Do()
+
+	if err != nil {
+		return "", err
+	}
+
+	return "Success", nil
+
+}
