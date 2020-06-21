@@ -7,6 +7,7 @@ import (
 
 	"github.com/lomby/gsuite/adminapi"
 	"github.com/lomby/gsuite/resellerapi"
+	"github.com/lomby/gsuite/verificationapi"
 	"github.com/urfave/cli/v2"
 )
 
@@ -28,6 +29,7 @@ func main() {
 	var userData string
 	var userKey string
 	var userAlias string
+	var verificationDomain string
 
 	// Flags for use within all commands and subcommands
 
@@ -70,6 +72,13 @@ func main() {
 		Name:        "userAlias",
 		Usage:       "alias to add to a user",
 		Destination: &userAlias,
+		Required:    true,
+	}
+
+	verificationDomainFlag := &cli.StringFlag{
+		Name:        "domain",
+		Usage:       "domain to verify",
+		Destination: &verificationDomain,
 		Required:    true,
 	}
 
@@ -306,6 +315,48 @@ func main() {
 							return err
 						}
 						fmt.Println(result)
+						return nil
+					},
+				},
+			},
+		},
+		// Commands for Site Verification API
+		{
+			Name:        "verification",
+			Usage:       "Verify commands for site verification api",
+			Description: "verification for domains",
+			Subcommands: []*cli.Command{
+				// Get the verification token for use with verifying the domain
+				{
+					Name:        "get-token",
+					Usage:       "verification get-token --domain DOMAIN",
+					Description: "Get token for domain verification",
+					Category:    "verification",
+					Flags:       []cli.Flag{verificationDomainFlag},
+					Action: func(c *cli.Context) error {
+						verificationService := verificationapi.New()
+						verify, err := verificationapi.GetToken(verificationService, verificationDomain)
+						if err != nil {
+							return err
+						}
+						fmt.Println(verify)
+						return nil
+					},
+				},
+				// Attempt to verify a domain
+				{
+					Name:        "verify",
+					Usage:       "verification verify --domain DOMAIN",
+					Description: "Attempt to verify domain after verification steps are completed",
+					Category:    "verification",
+					Flags:       []cli.Flag{verificationDomainFlag},
+					Action: func(c *cli.Context) error {
+						verificationService := verificationapi.New()
+						verify, err := verificationapi.Verify(verificationService, verificationDomain)
+						if err != nil {
+							return err
+						}
+						fmt.Println(verify)
 						return nil
 					},
 				},
