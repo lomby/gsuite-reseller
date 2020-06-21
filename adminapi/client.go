@@ -30,7 +30,7 @@ func New() *admin.Service {
 		log.Println(err)
 	}
 
-	// user to impersonate
+	// user to impersonate (should be a super admin user)
 	credentials.Subject = os.Getenv("CREDENTIALS_SUBJECT")
 	client := credentials.Client(ctx)
 

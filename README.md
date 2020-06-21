@@ -7,14 +7,14 @@ Perform customer, subscription, user and site verification functions from the co
 Use this guide to ensure the service account credentials are created properly along with relevant permission steps: https://developers.google.com/admin-sdk/reseller/v1/codelab/intro
 
 * Follow the Google service account set up for authentication. 
-* Add the location of the service_acount json file to your .env (This is required)
+* Add the location of the service_account json file to your .env (This is required)
 * Add a super admin user to impersonate to your .env file (This is required and sohuld just be an admin from your root reseller account)
 
 This is also handy for reference
 https://developers.google.com/identity/protocols/oauth2/service-account
 
 **Google api docs**
-This cli makes use of The Google Reseller API, Admin SDK Directory API and Site verification API. See the docs for each api here:
+This cli makes use of The Google Reseller API, Directory API and Site verification API. See the docs for each api here:
 
 Reseller: https://developers.google.com/admin-sdk/reseller/v1/get-start/getting-started
 Directory: https://developers.google.com/admin-sdk/directory/
@@ -71,6 +71,13 @@ gsuite subscription suspend --id CUSTOMERID
 ```
 gsuite subscription activate --id CUSTOMERID
 ```
+
+***Delete a Subscription***
+```
+gsuite subscription delete --id CUSTOMERID
+```
+This will end the reseller relationship and transfer the billing firectly to Google. See here for ore info: https://developers.google.com/admin-sdk/reseller/v1/reference/subscriptions/delete
+Defaults to deletionType of transfer_to_direct
 
 ### Users
 ***To see All User Commands Use:***
