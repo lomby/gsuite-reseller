@@ -1,47 +1,54 @@
 package verificationapi
 
-import "google.golang.org/api/siteverification/v1"
+import (
+	"encoding/json"
 
-func GetToken(conn *siteverification.Service, domain string) (*siteverification.SiteVerificationWebResourceGettokenResponse, error) {
+	"google.golang.org/api/siteverification/v1"
+)
 
-site := siteverification.SiteVerificationWebResourceGettokenRequestSite{
-	Type: "INET_DOMAIN",
-	Identifier: domain,
+func GetToken(conn *siteverification.Service, domain string) (string, error) {
+
+	site := siteverification.SiteVerificationWebResourceGettokenRequestSite{
+		Type:       "INET_DOMAIN",
+		Identifier: domain,
+	}
+
+	request := siteverification.SiteVerificationWebResourceGettokenRequest{
+		Site:               &site,
+		VerificationMethod: "DNS_TXT",
+	}
+
+	result, err := siteverification.NewWebResourceService(conn).GetToken(&request).Do()
+
+	if err != nil {
+		return "", err
+	}
+
+	toJSON, err := json.MarshalIndent(result, "", " ")
+
+	return string(toJSON), nil
+
 }
 
-request := siteverification.SiteVerificationWebResourceGettokenRequest{
-	Site: &site,
-	VerificationMethod: "DNS_TXT",
-}
+func Verify(conn *siteverification.Service, domain string) (string, error) {
 
-result, err := siteverification.NewWebResourceService(conn).GetToken(&request).Do()
+	site := siteverification.SiteVerificationWebResourceResourceSite{
+		Type:       "INET_DOMAIN",
+		Identifier: domain,
+	}
 
-if err != nil {
-	return nil, err
-}
+	request := siteverification.SiteVerificationWebResourceResource{
+		Site: &site,
+	}
 
-return result, nil
+	result, err := siteverification.NewWebResourceService(conn).Insert("DNS_TXT", &request).Do()
 
-}
+	if err != nil {
+		return "", err
+	}
 
-func Verify(conn *siteverification.Service, domain string) (*siteverification.SiteVerificationWebResourceResource, error) {
+	toJSON, err := json.MarshalIndent(result, "", " ")
 
-
-site := siteverification.SiteVerificationWebResourceResourceSite{
-	Type: "INET_DOMAIN",
-	Identifier: domain,
-}
-
-request := siteverification.SiteVerificationWebResourceResource{
-	Site: &site,
-}
-
-result, err := siteverification.NewWebResourceService(conn).Insert("DNS_TXT", &request).Do()
-
-if err != nil {
-	return nil, err
-}
-
-return result, nil
+	return string(toJSON), nil
 
 }

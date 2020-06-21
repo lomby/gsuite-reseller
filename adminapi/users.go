@@ -7,19 +7,7 @@ import (
 	admin "google.golang.org/api/admin/directory/v1"
 )
 
-type name struct {
-	FamilyName string `json:"familyName"`
-	GivenName  string `json:"givenName"`
-}
-
-type user struct {
-	Name                      name   `json: "name"`
-	Password                  string `json: "password"`
-	PrimaryEmail              string `json: "primaryEmail"`
-	ChangePasswordAtNextLogin bool   `json: "changePasswordAtNextLogin"`
-}
-
-func CreateUser(conn *admin.Service, data []byte) (*admin.User, error) {
+func CreateUser(conn *admin.Service, data []byte) (string, error) {
 
 	var newUser admin.User
 	json.Unmarshal(data, &newUser)
@@ -27,14 +15,16 @@ func CreateUser(conn *admin.Service, data []byte) (*admin.User, error) {
 	result, err := conn.Users.Insert(&newUser).Do()
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return result, nil
+	toJSON, err := json.MarshalIndent(result, "", " ")
+
+	return string(toJSON), nil
 
 }
 
-func UpdateUser(conn *admin.Service, userKey string, data []byte) (*admin.User, error) {
+func UpdateUser(conn *admin.Service, userKey string, data []byte) (string, error) {
 
 	fmt.Println(string(data))
 
@@ -44,22 +34,26 @@ func UpdateUser(conn *admin.Service, userKey string, data []byte) (*admin.User, 
 	result, err := conn.Users.Update(userKey, &user).Do()
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return result, nil
+	toJSON, err := json.MarshalIndent(result, "", " ")
+
+	return string(toJSON), nil
 
 }
 
-func GetUser(conn *admin.Service, userKey string) (*admin.User, error) {
+func GetUser(conn *admin.Service, userKey string) (string, error) {
 
 	result, err := conn.Users.Get(userKey).Do()
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return result, nil
+	toJSON, err := json.MarshalIndent(result, "", " ")
+
+	return string(toJSON), nil
 
 }
 
@@ -88,7 +82,7 @@ func DeleteUser(conn *admin.Service, userKey string) (string, error) {
 	return "Successfully Deleted", nil
 }
 
-func CreateUserAlias(conn *admin.Service, userKey string, alias string) (*admin.Alias, error) {
+func CreateUserAlias(conn *admin.Service, userKey string, alias string) (string, error) {
 
 	newAlias := &admin.Alias{
 		Alias: alias,
@@ -97,10 +91,12 @@ func CreateUserAlias(conn *admin.Service, userKey string, alias string) (*admin.
 	result, err := conn.Users.Aliases.Insert(userKey, newAlias).Do()
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return result, nil
+	toJSON, err := json.MarshalIndent(result, "", " ")
+
+	return string(toJSON), nil
 
 }
 
