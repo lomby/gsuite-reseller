@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"golang.org/x/oauth2/google"
 	admin "google.golang.org/api/admin/directory/v1"
@@ -14,7 +15,7 @@ func New() *admin.Service {
 
 	ctx := context.Background()
 
-	filename := "creds/credentials.json"
+	filename := os.Getenv("CREDENTIALS_FILE")
 	js, err := ioutil.ReadFile(filename)
 
 	if err != nil {
@@ -30,7 +31,7 @@ func New() *admin.Service {
 	}
 
 	// user to impersonate
-	credentials.Subject = "soletrader@reseller.soletrader.com"
+	credentials.Subject = os.Getenv("CREDENTIALS_SUBJECT")
 	client := credentials.Client(ctx)
 
 	adminService, err := admin.New(client)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/siteverification/v1"
@@ -12,7 +13,7 @@ import (
 func New() *siteverification.Service {
 	ctx := context.Background()
 
-	filename := "creds/credentials.json"
+	filename := os.Getenv("CREDENTIALS_FILE")
 	js, err := ioutil.ReadFile(filename)
 
 	if err != nil {
@@ -26,7 +27,8 @@ func New() *siteverification.Service {
 		log.Println(err)
 	}
 
-	credentials.Subject = "soletrader@reseller.soletrader.com"
+	// user to impersonate (should be a super admin user)
+	credentials.Subject = os.Getenv("CREDENTIALS_SUBJECT")
 	client := credentials.Client(ctx)
 
 	siteVerificationService, err := siteverification.New(client)

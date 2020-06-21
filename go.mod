@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go v0.58.0 // indirect
+	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	go.opencensus.io v0.22.4 // indirect
 	go.uber.org/zap v1.15.0 // indirect
