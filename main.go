@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -106,7 +107,10 @@ func main() {
 					Flags:       []cli.Flag{customerIDFlag},
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
-						customer := resellerapi.GetCustomer(resellerService, customerID)
+						customer, err := resellerapi.GetCustomer(resellerService, customerID)
+						if err != nil {
+							return err
+						}
 						fmt.Println(customer)
 						return nil
 					},
@@ -165,7 +169,11 @@ func main() {
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
 						subscription := resellerapi.FindSubscriptionByCustomerID(resellerService, customerID)
-						fmt.Println(subscription)
+						toJSON, err := json.MarshalIndent(subscription, "", " ")
+						if err != nil {
+							return err
+						}
+						fmt.Println(string(toJSON))
 						return nil
 					},
 				},
@@ -178,7 +186,10 @@ func main() {
 					Flags:       []cli.Flag{customerIDFlag},
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
-						subscription := resellerapi.SuspendSubscription(resellerService, customerID)
+						subscription, err := resellerapi.SuspendSubscription(resellerService, customerID)
+						if err != nil {
+							return err
+						}
 						fmt.Println(subscription)
 						return nil
 					},
@@ -192,7 +203,10 @@ func main() {
 					Flags:       []cli.Flag{customerIDFlag},
 					Action: func(c *cli.Context) error {
 						resellerService := resellerapi.New()
-						subscription := resellerapi.ActivateSubscription(resellerService, customerID)
+						subscription, err := resellerapi.ActivateSubscription(resellerService, customerID)
+						if err != nil {
+							return err
+						}
 						fmt.Println(subscription)
 						return nil
 					},

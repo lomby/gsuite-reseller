@@ -2,49 +2,25 @@ package resellerapi
 
 import (
 	"encoding/json"
-	"log"
 
 	"google.golang.org/api/reseller/v1"
 )
 
-type address struct {
-	ContactName      string `json: "contactName"`
-	OrganizationName string `json: "organizationName"`
-	AddressLine1     string `json: "addressLine1"`
-	CountryCode      string `json: "countryCode"`
-	PostalCode       string `json: "postcalCode"`
-}
-
-type customer struct {
-	CustomerID             string  `json: "customerId"`
-	CustomerDomain         string  `json: "customerDomain"`
-	CustomerDomainVerified bool    `json: "customerDomainVerified"`
-	AlternateEmail         string  `json: "alternateEmail"`
-	PostalAddress          address `json: "postalAddress"`
-}
-
-func GetCustomer(conn *reseller.Service, customerID string) customer {
+func GetCustomer(conn *reseller.Service, customerID string) (string, error) {
 
 	result, err := conn.Customers.Get(customerID).Do()
 
 	if err != nil {
-		log.Println(err)
+		return "", nil
 	}
 
-	js, err := json.Marshal(result)
+	toJSON, err := json.MarshalIndent(result, "", " ")
 
-	if err != nil {
-		log.Println(err)
-	}
-
-	var customer customer
-	json.Unmarshal(js, &customer)
-
-	return customer
+	return string(toJSON), nil
 
 }
 
-func CreateCustomer(conn *reseller.Service, data []byte) (*reseller.Customer, error) {
+func CreateCustomer(conn *reseller.Service, data []byte) (string, error) {
 
 	var newCustomer reseller.Customer
 	json.Unmarshal(data, &newCustomer)
@@ -52,9 +28,11 @@ func CreateCustomer(conn *reseller.Service, data []byte) (*reseller.Customer, er
 	result, err := conn.Customers.Insert(&newCustomer).Do()
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return result, nil
+	toJSON, err := json.MarshalIndent(result, "", " ")
+
+	return string(toJSON), nil
 
 }
