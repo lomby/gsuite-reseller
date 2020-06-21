@@ -3,3 +3,4 @@ customer.json
 subscription.json
 user.json
 gsuite
+.env

@@ -3,10 +3,12 @@
 Perform customer, subscription, user and site verification functions from the command line
 
 **Authentication**
-Follow the Google service account set up for authentication. Create a folder named 'creds' in the same directory as the binary with a filename of credentials.json and store the service_acount json file here.
 
-Use this guide to ensure the service account credentials are created properly along with relevant permission steps:
-https://developers.google.com/admin-sdk/reseller/v1/codelab/intro
+Use this guide to ensure the service account credentials are created properly along with relevant permission steps: https://developers.google.com/admin-sdk/reseller/v1/codelab/intro
+
+* Follow the Google service account set up for authentication. 
+* Add the location of the service_acount json file to your .env (This is required)
+* Add a super admin user to impersonate to your .env file (This is required and sohuld just be an admin from your root reseller account)
 
 This is also handy for reference
 https://developers.google.com/identity/protocols/oauth2/service-account
@@ -132,6 +134,6 @@ This command currently defaults to DNS verification with a TXT record
 
 ***Verify***
 ```
-gsuite verify --domain DOMAIN
+gsuite verification verify --domain DOMAIN
 ```
 This will attempt to verify a domain (ensure verification steps have been carried out to get a success response here)

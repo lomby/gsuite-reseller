@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/lomby/gsuite/adminapi"
 	"github.com/lomby/gsuite/resellerapi"
 	"github.com/lomby/gsuite/verificationapi"
@@ -20,6 +21,12 @@ func appInfo() {
 }
 
 func main() {
+
+	// Load the .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	appInfo()
 
@@ -364,7 +371,7 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
